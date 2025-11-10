@@ -32,9 +32,10 @@ fun LottoFortuneScreen(
         color = MintBackground
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -42,7 +43,6 @@ fun LottoFortuneScreen(
                 BalanceCard(uiState.balance)
                 LottoNumbersCard(uiState.thisWeekNumbers)
                 TipBanner("매일 하루에 한 번 보너스 금액이 지급됩니다")
-                Spacer(modifier = Modifier.weight(1f))
             }
 
             BottomButtons(
@@ -87,27 +87,48 @@ fun BalanceCard(balance: Int) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LottoNumbersCard(numbers: List<Int>) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Text(text = "이번 주 로또 번호", color = Color.Gray, fontSize = 13.sp)
         Spacer(modifier = Modifier.height(12.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            numbers.forEach { num ->
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .background(MintPrimary, RoundedCornerShape(999.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = num.toString(), color = Color.White, fontSize = 16.sp)
-                }
-            }
+
+        LottoNumberRows(numbers)
+    }
+}
+@Composable
+private fun LottoNumberRows(numbers: List<Int>) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        numbers.chunked(3).forEach { row ->
+            LottoNumberRow(row)
         }
+    }
+}
+@Composable
+private fun LottoNumberRow(row: List<Int>) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(
+            12.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        row.forEach { num ->
+            LottoNumberBall(number = num)
+        }
+    }
+}
+
+@Composable
+private fun LottoNumberBall(number: Int) {
+    Box(
+        modifier = Modifier
+            .size(52.dp)
+            .background(MintPrimary, RoundedCornerShape(999.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = number.toString(), color = Color.White, fontSize = 16.sp)
     }
 }
 
@@ -148,10 +169,24 @@ fun BottomButtons(
             shape = RoundedCornerShape(40.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(56.dp)
+                .height(100.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp)
         ) {
-            Text("🎟 랜덤 로또 구매 (₩1,000)")
+            Column(
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "🎟 랜덤 로또 구매",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "(₩1,000)",
+                    fontSize = 13.sp,
+                )
+            }
         }
+
         Button(
             onClick = onShowFortune,
             colors = ButtonDefaults.buttonColors(
@@ -161,9 +196,21 @@ fun BottomButtons(
             shape = RoundedCornerShape(40.dp),
             modifier = Modifier
                 .weight(1f)
-                .height(56.dp)
+                .height(100.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp)
         ) {
-            Text("🔮 오늘의 운세")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "🔮 오늘의 운세",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     }
 }
+

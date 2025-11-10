@@ -7,6 +7,7 @@ import com.geniusjun.lotto.model.LottoUiState
 import com.geniusjun.lotto.util.generateLottoNumbers
 import com.geniusjun.lotto.util.loadLastFortuneDate
 import com.geniusjun.lotto.util.saveLastFortuneDate
+import com.geniusjun.lotto.util.todayString
 import java.time.LocalDate
 
 @Composable
@@ -34,7 +35,7 @@ fun LottoFortuneApp() {
     var currentBalance by remember { mutableIntStateOf(uiState.balance) }
 
     // 오늘 날짜 문자열 (예: "2025-11-10")
-    val today = remember { LocalDate.now().toString() }
+    val today = remember { todayString() }
 
     // 로컬 저장된 마지막 운세 본 날짜 불러오기
     var lastFortuneDate by remember { mutableStateOf(loadLastFortuneDate(context)) }
