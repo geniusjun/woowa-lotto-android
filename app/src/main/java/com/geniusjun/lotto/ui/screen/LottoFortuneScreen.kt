@@ -87,27 +87,48 @@ fun BalanceCard(balance: Int) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LottoNumbersCard(numbers: List<Int>) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Text(text = "이번 주 로또 번호", color = Color.Gray, fontSize = 13.sp)
         Spacer(modifier = Modifier.height(12.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            numbers.forEach { num ->
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .background(MintPrimary, RoundedCornerShape(999.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = num.toString(), color = Color.White, fontSize = 16.sp)
-                }
-            }
+
+        LottoNumberRows(numbers)
+    }
+}
+@Composable
+private fun LottoNumberRows(numbers: List<Int>) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        numbers.chunked(3).forEach { row ->
+            LottoNumberRow(row)
         }
+    }
+}
+@Composable
+private fun LottoNumberRow(row: List<Int>) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(
+            12.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        row.forEach { num ->
+            LottoNumberBall(number = num)
+        }
+    }
+}
+
+@Composable
+private fun LottoNumberBall(number: Int) {
+    Box(
+        modifier = Modifier
+            .size(52.dp)
+            .background(MintPrimary, RoundedCornerShape(999.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = number.toString(), color = Color.White, fontSize = 16.sp)
     }
 }
 
