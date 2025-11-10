@@ -173,31 +173,43 @@ fun BottomButtons(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // 왼쪽 버튼
         Button(
             onClick = onBuyLotto,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MintPrimary,
+                containerColor = Color(0xFF27C1A3),
                 contentColor = Color.White
             ),
-            shape = RoundedCornerShape(40.dp)
+            shape = RoundedCornerShape(40.dp),
+            modifier = Modifier
+                .weight(1f)              // ← 양쪽 균등
+                .height(100.dp)           // ← 키운 높이
         ) {
             Text(text = "🎟 랜덤 로또 구매 (₩1,000)")
         }
+
+        // 오른쪽 버튼
         Button(
             onClick = onShowFortune,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFF6D486),
                 contentColor = Color(0xFF6B4D15)
             ),
-            shape = RoundedCornerShape(40.dp)
+            shape = RoundedCornerShape(40.dp),
+            modifier = Modifier
+                .weight(1f)
+                .height(100.dp)
         ) {
             Text(text = "🔮 오늘의 운세")
         }
     }
 }
+
 
 @Composable
 fun LottoResultDialog(
