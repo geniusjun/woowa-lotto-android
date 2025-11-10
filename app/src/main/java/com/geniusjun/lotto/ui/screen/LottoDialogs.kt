@@ -18,11 +18,13 @@ import com.geniusjun.lotto.model.LottoPick
 fun LottoDialogs(
     showLotto: Boolean,
     showFortune: Boolean,
+    showFortuneAlready: Boolean,
     showNoMoney: Boolean,
     thisWeekNumbers: List<Int>,
     myPick: LottoPick?,
     onCloseLotto: () -> Unit,
     onCloseFortune: () -> Unit,
+    onCloseFortuneAlready: () -> Unit,
     onCloseNoMoney: () -> Unit
 ) {
     if (showLotto && myPick != null) {
@@ -39,6 +41,10 @@ fun LottoDialogs(
             fortuneTag = "행운",
             onDismiss = onCloseFortune
         )
+    }
+
+    if (showFortuneAlready) {
+        FortuneAlreadySeenDialog(onDismiss = onCloseFortuneAlready)
     }
 
     if (showNoMoney) {
@@ -177,6 +183,23 @@ fun FortuneDialog(
         },
         shape = RoundedCornerShape(24.dp),
         containerColor = Color.White
+    )
+}
+
+@Composable
+private fun FortuneAlreadySeenDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("확인")
+            }
+        },
+        title = { Text("오늘의 운세는 이미 확인했어요") },
+        text = {
+            Text("하루에 한 번만 운세를 볼 수 있어요.\n내일 다시 시도해 주세요.")
+        },
+        shape = RoundedCornerShape(20.dp)
     )
 }
 @Composable
