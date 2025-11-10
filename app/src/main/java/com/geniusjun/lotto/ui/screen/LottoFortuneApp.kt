@@ -37,12 +37,12 @@ fun LottoFortuneApp() {
     )
 
     // 다이얼로그는 아래에서 한 번에
-/*    LottoDialogs(
+        LottoDialogs(
         showLotto = showLottoDialog,
         showFortune = showFortuneDialog,
         thisWeekNumbers = uiState.thisWeekNumbers,
         myPick = myLatestPick,
         onCloseLotto = { showLottoDialog = false },
         onCloseFortune = { showFortuneDialog = false }
-    ) */
+    )
 }

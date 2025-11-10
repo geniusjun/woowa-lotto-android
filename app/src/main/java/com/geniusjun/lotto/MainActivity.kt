@@ -3,7 +3,7 @@ package com.geniusjun.lotto
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-//import com.geniusjun.lotto.ui.screen.LottoFortuneApp
+import com.geniusjun.lotto.ui.screen.LottoFortuneApp
 import com.geniusjun.lotto.ui.theme.LottoTheme
 
 class MainActivity : ComponentActivity() {
@@ -11,7 +11,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             LottoTheme {
-                //LottoFortuneApp()
+                LottoFortuneApp()
             }
         }
     }
