@@ -10,11 +10,12 @@ fun LottoFortuneApp() {
     // 다이얼로그 열림 상태
     var showLottoDialog by remember { mutableStateOf(false) }
     var showFortuneDialog by remember { mutableStateOf(false) }
+    var showNoMoneyDialog by remember { mutableStateOf(false) }
 
     // 내가 방금 산 로또
     var myLatestPick by remember { mutableStateOf<LottoPick?>(null) }
 
-    // 화면에 보여줄 기본 상태 (지금은 하드코딩)
+    // 초기 데이터 (변하지 않는 쪽)
     val uiState = remember {
         LottoUiState(
             balance = 60_000,
@@ -22,27 +23,40 @@ fun LottoFortuneApp() {
         )
     }
 
-    // 실제 화면
+    // 실제로 변하는 잔액
+    var currentBalance by remember { mutableIntStateOf(uiState.balance) }
+
+    // 한 장 가격
+    val ticketPrice = 1_000
+
     LottoFortuneScreen(
-        uiState = uiState,
+        uiState = uiState.copy(balance = currentBalance),
         onClickBuy = {
-            // 여기서 번호 뽑고
-            myLatestPick = generateLottoNumbers()
-            // 다이얼로그 열기
-            showLottoDialog = true
+            if (currentBalance >= ticketPrice) {
+                // 돈 있으면 → 사기
+                val pick = generateLottoNumbers()
+                myLatestPick = pick
+                currentBalance -= ticketPrice
+                showLottoDialog = true
+            } else {
+                // 돈 없으면 → 잔액 부족
+                showNoMoneyDialog = true
+            }
         },
         onClickFortune = {
             showFortuneDialog = true
         }
     )
 
-    // 다이얼로그는 아래에서 한 번에
-        LottoDialogs(
+    // 다이얼로그 모아놓은 곳
+    LottoDialogs(
         showLotto = showLottoDialog,
         showFortune = showFortuneDialog,
+        showNoMoney = showNoMoneyDialog,
         thisWeekNumbers = uiState.thisWeekNumbers,
         myPick = myLatestPick,
         onCloseLotto = { showLottoDialog = false },
-        onCloseFortune = { showFortuneDialog = false }
+        onCloseFortune = { showFortuneDialog = false },
+        onCloseNoMoney = { showNoMoneyDialog = false }
     )
 }

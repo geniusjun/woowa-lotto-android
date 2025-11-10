@@ -18,10 +18,12 @@ import com.geniusjun.lotto.model.LottoPick
 fun LottoDialogs(
     showLotto: Boolean,
     showFortune: Boolean,
+    showNoMoney: Boolean,
     thisWeekNumbers: List<Int>,
     myPick: LottoPick?,
     onCloseLotto: () -> Unit,
-    onCloseFortune: () -> Unit
+    onCloseFortune: () -> Unit,
+    onCloseNoMoney: () -> Unit
 ) {
     if (showLotto && myPick != null) {
         LottoResultDialog(
@@ -38,7 +40,12 @@ fun LottoDialogs(
             onDismiss = onCloseFortune
         )
     }
+
+    if (showNoMoney) {
+        NoMoneyDialog(onDismiss = onCloseNoMoney)
+    }
 }
+
 
 @Composable
 fun LottoResultDialog(
@@ -170,5 +177,19 @@ fun FortuneDialog(
         },
         shape = RoundedCornerShape(24.dp),
         containerColor = Color.White
+    )
+}
+@Composable
+private fun NoMoneyDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("확인")
+            }
+        },
+        title = { Text("잔액이 부족합니다") },
+        text = { Text("로또를 구매하려면 최소 1,000원이 필요합니다.") },
+        shape = RoundedCornerShape(20.dp)
     )
 }
