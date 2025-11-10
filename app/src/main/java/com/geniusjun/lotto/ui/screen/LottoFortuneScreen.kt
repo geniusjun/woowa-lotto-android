@@ -187,8 +187,8 @@ fun BottomButtons(
             ),
             shape = RoundedCornerShape(40.dp),
             modifier = Modifier
-                .weight(1f)              // ← 양쪽 균등
-                .height(100.dp)           // ← 키운 높이
+                .weight(1f)
+                .height(100.dp)
         ) {
             Text(text = "🎟 랜덤 로또 구매 (₩1,000)")
         }
