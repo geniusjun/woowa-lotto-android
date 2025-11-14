@@ -11,8 +11,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import com.geniusjun.lotto.model.LottoUiState
 import com.geniusjun.lotto.ui.components.AppCard
@@ -48,7 +46,7 @@ fun LottoFortuneScreen(
             ) {
                 TitleSection()
                 BalanceCard(uiState.balance)
-                LottoNumbersCard(uiState.thisWeekNumbers)
+                LottoNumbersCard(uiState.winningNumbers)
                 TipBanner("매일 하루에 한 번 보너스 금액이 지급됩니다")
             }
 
