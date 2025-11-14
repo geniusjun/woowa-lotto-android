@@ -25,13 +25,20 @@ import com.geniusjun.lotto.ui.theme.MintPrimary
 fun LottoFortuneScreen(
     uiState: LottoUiState,
     onClickBuy: () -> Unit,
-    onClickFortune: () -> Unit
+    onClickFortune: () -> Unit,
+    onLogout: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MintBackground
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            LogoutButton(
+                onLogout = onLogout,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            )
 
             Column(
                 modifier = Modifier
@@ -53,6 +60,23 @@ fun LottoFortuneScreen(
                     .padding(bottom = 20.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun LogoutButton(
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TextButton(
+        onClick = onLogout,
+        modifier = modifier
+    ) {
+        Text(
+            text = "로그아웃",
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
     }
 }
 
