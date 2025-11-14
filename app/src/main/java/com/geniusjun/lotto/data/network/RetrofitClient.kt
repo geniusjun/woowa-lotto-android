@@ -36,10 +36,23 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-    
+
+    /**
+     * TokenProvider를 사용해 AuthApi 인스턴스를 생성한다.
+     * 인증 관련 API 호출에서 사용된다.
+     */
     fun createAuthApi(tokenProvider: TokenProvider): AuthApi {
         return createRetrofit(tokenProvider).create(AuthApi::class.java)
     }
+
+    /**
+     * 제네릭 API 생성 함수.
+     * LottoApi, UserApi 등 새로운 API 인터페이스를 만들 때 사용한다.
+     */
+    inline fun <reified T> createApi(tokenProvider: TokenProvider): T {
+        return createRetrofit(tokenProvider).create(T::class.java)
+    }
+
 }
 
 
