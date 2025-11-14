@@ -2,6 +2,9 @@ package com.geniusjun.lotto.ui.screen
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.geniusjun.lotto.auth.GoogleSignInManager
+import com.geniusjun.lotto.data.network.TokenProvider
 import com.geniusjun.lotto.model.LottoPick
 import com.geniusjun.lotto.model.LottoUiState
 import com.geniusjun.lotto.util.generateLottoNumbers
@@ -11,7 +14,9 @@ import com.geniusjun.lotto.util.todayString
 import java.time.LocalDate
 
 @Composable
-fun LottoFortuneApp() {
+fun LottoFortuneApp(
+    onLogout: () -> Unit
+) {
     val context = LocalContext.current
 
     // 다이얼로그 열림 상태
@@ -42,6 +47,15 @@ fun LottoFortuneApp() {
 
     // 한 장 가격
     val ticketPrice = 1_000
+    
+    // 로그아웃 처리
+    val signInManager = remember {
+        GoogleSignInManager(context, TokenProvider(context))
+    }
+    
+    val logoutViewModel: LogoutViewModel = viewModel {
+        LogoutViewModel(signInManager)
+    }
 
     LottoFortuneScreen(
         uiState = uiState.copy(balance = currentBalance),
@@ -66,6 +80,9 @@ fun LottoFortuneApp() {
                 lastFortuneDate = today
                 saveLastFortuneDate(context, today)
             }
+        },
+        onLogout = {
+            logoutViewModel.logout(onScreenTransition = onLogout)
         }
     )
 
