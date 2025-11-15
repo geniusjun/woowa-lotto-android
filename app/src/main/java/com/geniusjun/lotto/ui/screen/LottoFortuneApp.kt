@@ -4,8 +4,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.geniusjun.lotto.auth.GoogleSignInManager
+import com.geniusjun.lotto.data.api.LottoApi
 import com.geniusjun.lotto.data.network.RetrofitClient
 import com.geniusjun.lotto.data.network.TokenProvider
+import com.geniusjun.lotto.data.repository.AuthRepository
 import com.geniusjun.lotto.data.repository.LottoRepository
 import com.geniusjun.lotto.model.LottoPick
 import com.geniusjun.lotto.model.LottoUiState
@@ -27,7 +29,12 @@ fun LottoFortuneApp(
     }
     
     val lottoRepository = remember {
-        val lottoApi = RetrofitClient.createApi<com.geniusjun.lotto.data.api.LottoApi>(tokenProvider)
+        // AuthRepository 먼저 생성 (토큰 갱신용)
+        val authApi = RetrofitClient.createAuthApi(tokenProvider)
+        val authRepository = AuthRepository(authApi, tokenProvider)
+        
+        // 다른 API는 AuthRepository를 포함하여 생성 (자동 토큰 갱신 가능)
+        val lottoApi = RetrofitClient.createApi<LottoApi>(tokenProvider, authRepository)
         LottoRepository(lottoApi)
     }
     
