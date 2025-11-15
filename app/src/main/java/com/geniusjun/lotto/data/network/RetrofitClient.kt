@@ -29,8 +29,8 @@ object RetrofitClient {
                 AuthInterceptor(
                     tokenProvider = { tokenProvider.getAccessToken() },
                     tokenRefresher = {
-                        authRepository.refreshAccessToken().map { Result.success(Unit) }
-                            .getOrElse { Result.failure(it) }
+                        authRepository.refreshAccessToken().map { Result.success<Unit>(Unit) }
+                            .getOrElse { error -> Result.failure<Unit>(error) }
                     }
                 )
             )
