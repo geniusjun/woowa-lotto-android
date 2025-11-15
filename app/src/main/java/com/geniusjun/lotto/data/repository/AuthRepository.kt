@@ -4,6 +4,8 @@ import android.util.Log
 import com.geniusjun.lotto.data.api.AuthApi
 import com.geniusjun.lotto.data.model.GoogleLoginRequest
 import com.geniusjun.lotto.data.model.LoginResponse
+import com.geniusjun.lotto.data.model.RefreshRequest
+import com.geniusjun.lotto.data.model.RefreshResponse
 import com.geniusjun.lotto.data.network.TokenProvider
 
 class AuthRepository(
@@ -25,6 +27,30 @@ class AuthRepository(
             }
         } catch (e: Exception) {
             Log.e(TAG, "로그인 API 에러: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Refresh 토큰으로 새 Access 토큰 발급
+     */
+    suspend fun refreshAccessToken(): Result<RefreshResponse> {
+        return try {
+            val refreshToken = tokenProvider.getRefreshToken()
+                ?: return Result.failure(Exception("Refresh token이 없습니다."))
+            
+            val response = authApi.refresh(RefreshRequest(refreshToken))
+            
+            if (response.success && response.data != null) {
+                val refreshData = response.data!!
+                tokenProvider.saveAccessToken(refreshData.accessToken)
+                Result.success(refreshData)
+            } else {
+                Log.e(TAG, "토큰 갱신 실패: ${response.message}")
+                Result.failure(Exception(response.message ?: "Token refresh failed"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "토큰 갱신 API 에러: ${e.message}", e)
             Result.failure(e)
         }
     }
