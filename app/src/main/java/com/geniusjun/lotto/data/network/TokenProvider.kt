@@ -18,10 +18,20 @@ class TokenProvider(context: Context) {
         return prefs.getString(KEY_ACCESS_TOKEN, null)
     }
     
+    fun getRefreshToken(): String? {
+        return prefs.getString(KEY_REFRESH_TOKEN, null)
+    }
+    
     fun saveTokens(accessToken: String, refreshToken: String) {
         prefs.edit {
             putString(KEY_ACCESS_TOKEN, accessToken)
             putString(KEY_REFRESH_TOKEN, refreshToken)
+        }
+    }
+    
+    fun saveAccessToken(accessToken: String) {
+        prefs.edit {
+            putString(KEY_ACCESS_TOKEN, accessToken)
         }
     }
     
