@@ -12,67 +12,75 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.geniusjun.lotto.model.LottoPick
+import com.geniusjun.lotto.data.model.LottoDrawResponse
+import com.geniusjun.lotto.ui.theme.LottoColors
+import com.geniusjun.lotto.ui.theme.MintPrimary
 
 @Composable
 fun LottoDialogs(
-    showLotto: Boolean,
-    showFortune: Boolean,
-    showFortuneAlready: Boolean,
-    showNoMoney: Boolean,
-    thisWeekNumbers: List<Int>,
-    myPick: LottoPick?,
-    onCloseLotto: () -> Unit,
-    onCloseFortune: () -> Unit,
-    onCloseFortuneAlready: () -> Unit,
-    onCloseNoMoney: () -> Unit
+    dialogState: DialogState,
+    onCloseAll: () -> Unit
 ) {
-    if (showLotto && myPick != null) {
-        LottoResultDialog(
-            thisWeekNumbers = thisWeekNumbers,
-            myPick = myPick,
-            onDismiss = onCloseLotto
-        )
+    dialogState.lottoDrawResult?.let { result ->
+        if (dialogState.showLotto) {
+            LottoResultDialog(
+                drawResult = result,
+                onDismiss = onCloseAll
+            )
+        }
     }
 
-    if (showFortune) {
+    if (dialogState.showFortune) {
         FortuneDialog(
             fortuneText = "예상치 못한 행운이 찾아올 것입니다 ✨",
             fortuneTag = "행운",
-            onDismiss = onCloseFortune
+            onDismiss = onCloseAll
         )
     }
 
-    if (showFortuneAlready) {
-        FortuneAlreadySeenDialog(onDismiss = onCloseFortuneAlready)
+    if (dialogState.showFortuneAlready) {
+        FortuneAlreadySeenDialog(onDismiss = onCloseAll)
     }
 
-    if (showNoMoney) {
-        NoMoneyDialog(onDismiss = onCloseNoMoney)
+    if (dialogState.showNoMoney) {
+        NoMoneyDialog(onDismiss = onCloseAll)
     }
 }
 
 @Composable
 fun LottoResultDialog(
-    thisWeekNumbers: List<Int>,
-    myPick: LottoPick,
+    drawResult: LottoDrawResponse,
     onDismiss: () -> Unit
 ) {
-    // 이번 주 번호를 set으로 만들어서 일치 여부만 빠르게 보게끔 설계
-    val winningSet = remember(thisWeekNumbers) { thisWeekNumbers.toSet() }
+    val matchedSet = remember(drawResult.matchedNumbers) { drawResult.matchedNumbers.toSet() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
         title = { LottoResultTitle() },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                WinningNumbersSection(thisWeekNumbers)
-                MyNumbersSection(
-                    myPick = myPick,
-                    winningSet = winningSet
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // 등수 및 보상 표시
+                RankAndRewardSection(
+                    rank = drawResult.rank,
+                    reward = drawResult.reward
                 )
-                LottoResultLegend()
+                
+                HorizontalDivider(color = Color.LightGray, thickness = 1.dp)
+                
+                // 당첨 번호 (일치하는 번호는 색깔 표시)
+                WinningNumbersSection(
+                    numbers = drawResult.winningNumbers,
+                    matchedSet = matchedSet
+                )
+                
+                // 내가 구매한 번호
+                MyNumbersSection(
+                    myNumbers = drawResult.myNumbers,
+                    bonusNumber = drawResult.bonusNumber,
+                    matchedSet = matchedSet,
+                    bonusMatched = drawResult.bonusMatched
+                )
             }
         },
         dismissButton = {
@@ -85,63 +93,113 @@ fun LottoResultDialog(
 
 @Composable
 private fun LottoResultTitle() {
-    Text("🎟 로또 추첨 결과", fontWeight = FontWeight.Bold)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("🎟 로또 추첨 결과", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    }
 }
 
 @Composable
-private fun WinningNumbersSection(numbers: List<Int>) {
-    Text(text = "이번 주 당첨 번호", color = Color.Gray, fontSize = 13.sp)
-
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        numbers.chunked(4).forEach { row ->
-            CenteredNumberRow {
-                row.forEach { num ->
-                    NumberBall(
-                        number = num,
-                        background = Color(0xFFE0E0E0),
-                        contentColor = Color.Black
-                    )
-                }
-            }
+private fun RankAndRewardSection(
+    rank: String,
+    reward: Long
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = rank,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = MintPrimary
+        )
+        
+        if (reward > 0) {
+            Text(
+                text = "보상: ₩ ${String.format("%,d", reward)}",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = LottoColors.Reward
+            )
+        } else {
+            Text(
+                text = "다음 기회에...",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
         }
     }
 }
 
-// 내가 구매한 번호(일반 6개 + 보너스)
+@Composable
+private fun WinningNumbersSection(
+    numbers: List<Int>,
+    matchedSet: Set<Int>
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(text = "이번 주 당첨 번호", color = Color.Gray, fontSize = 13.sp)
+        NumberBallsGrid(
+            numbers = numbers,
+            chunkSize = 4,
+            isMatched = { num -> num in matchedSet },
+            matchedColor = LottoColors.WinningNumberMatched,
+            defaultColor = LottoColors.WinningNumberDefault,
+            matchedTextColor = Color.White,
+            defaultTextColor = Color.Black
+        )
+    }
+}
+
 @Composable
 private fun MyNumbersSection(
-    myPick: LottoPick,
-    winningSet: Set<Int>
+    myNumbers: List<Int>,
+    bonusNumber: Int,
+    matchedSet: Set<Int>,
+    bonusMatched: Boolean
 ) {
-    Text(text = "내가 구매한 번호", color = Color.Gray, fontSize = 13.sp)
-
-    // 1) 일반 번호 6개
-    PurchasedNumbers(
-        numbers = myPick.numbers,
-        winningSet = winningSet
-    )
-
-    // 2) 보너스 따로
-    BonusNumber(
-        bonus = myPick.bonus,
-        isMatched = myPick.bonus in winningSet
-    )
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(text = "내가 구매한 번호", color = Color.Gray, fontSize = 13.sp)
+        
+        NumberBallsGrid(
+            numbers = myNumbers,
+            chunkSize = 3,
+            isMatched = { num -> num in matchedSet },
+            matchedColor = LottoColors.MyNumberMatched,
+            defaultColor = LottoColors.MyNumberDefault,
+            matchedTextColor = Color.White,
+            defaultTextColor = Color.White
+        )
+        
+        BonusNumberRow(
+            number = bonusNumber,
+            isMatched = bonusMatched
+        )
+    }
 }
 
 @Composable
-private fun PurchasedNumbers(
+private fun NumberBallsGrid(
     numbers: List<Int>,
-    winningSet: Set<Int>
+    chunkSize: Int,
+    isMatched: (Int) -> Boolean,
+    matchedColor: Color,
+    defaultColor: Color,
+    matchedTextColor: Color,
+    defaultTextColor: Color
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        numbers.chunked(3).forEach { row ->
+        numbers.chunked(chunkSize).forEach { row ->
             CenteredNumberRow {
                 row.forEach { num ->
-                    val matched = num in winningSet
+                    val matched = isMatched(num)
                     NumberBall(
                         number = num,
-                        background = if (matched) Color(0xFFF6A94E) else Color(0xFF27C1A3),
-                        contentColor = Color.White
+                        background = if (matched) matchedColor else defaultColor,
+                        contentColor = if (matched) matchedTextColor else defaultTextColor
                     )
                 }
             }
@@ -150,8 +208,8 @@ private fun PurchasedNumbers(
 }
 
 @Composable
-private fun BonusNumber(
-    bonus: Int,
+private fun BonusNumberRow(
+    number: Int,
     isMatched: Boolean
 ) {
     Row(
@@ -163,20 +221,11 @@ private fun BonusNumber(
     ) {
         Text(text = "보너스", color = Color.Gray, fontSize = 12.sp)
         NumberBall(
-            number = bonus,
-            background = if (isMatched) Color(0xFFDB5A5A) else Color(0xFF27C1A3),
+            number = number,
+            background = if (isMatched) LottoColors.BonusMatched else LottoColors.BonusDefault,
             contentColor = Color.White
         )
     }
-}
-
-@Composable
-private fun LottoResultLegend() {
-    Text(
-        text = "주황색으로 표시된 번호가 일치한 번호입니다.\n보너스 번호는 별도로 표시됩니다.",
-        fontSize = 11.sp,
-        color = Color.Gray
-    )
 }
 
 // 공 가운데 정렬 공통 Row
