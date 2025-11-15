@@ -2,6 +2,7 @@ package com.geniusjun.lotto.data.api
 
 import com.geniusjun.lotto.data.model.ApiResponse
 import com.geniusjun.lotto.data.model.BalanceResponse
+import com.geniusjun.lotto.data.model.FortuneResponse
 import com.geniusjun.lotto.data.model.LottoDrawResponse
 import com.geniusjun.lotto.data.model.WinningNumbersResponse
 import retrofit2.http.GET
@@ -25,5 +26,11 @@ interface LottoApi {
      */
     @GET("api/member/balance")
     suspend fun getBalance(): ApiResponse<BalanceResponse>
+    
+    /**
+     * 오늘의 운세 조회
+     */
+    @GET("api/fortune/today")
+    suspend fun getTodayFortune(): ApiResponse<FortuneResponse>
 }
 
