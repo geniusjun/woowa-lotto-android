@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * 로또 관련 UI 상태를 관리하는 ViewModel
+ * UI 상태를 관리하는 ViewModel
  */
 class LottoViewModel(
     private val lottoRepository: LottoRepository
@@ -25,6 +25,9 @@ class LottoViewModel(
     
     private val _balance = MutableStateFlow<Long>(0)
     val balance: StateFlow<Long> = _balance.asStateFlow()
+    
+    private val _fortune = MutableStateFlow<String?>(null)
+    val fortune: StateFlow<String?> = _fortune.asStateFlow()
     
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
@@ -76,10 +79,8 @@ class LottoViewModel(
         viewModelScope.launch {
             lottoRepository.drawLotto()
                 .onSuccess { drawResponse ->
-                    // 당첨 번호 업데이트 (API 응답에서 제공)
                     _winningNumbers.value = drawResponse.winningNumbers
                     _bonusNumber.value = drawResponse.bonusNumber
-                    // 잔액 업데이트 (API 응답에서 제공)
                     _balance.value = drawResponse.balance
                     _error.value = null
                     onSuccess(drawResponse)
@@ -88,6 +89,28 @@ class LottoViewModel(
                     Log.e(TAG, "로또 구매 실패: ${error.message}")
                     _error.value = error.message
                     onFailure(error.message ?: "로또 구매에 실패했습니다.")
+                }
+        }
+    }
+    
+    /**
+     * 오늘의 운세 조회
+     */
+    fun loadFortune(
+        onSuccess: (String) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            lottoRepository.getTodayFortune()
+                .onSuccess { response ->
+                    _fortune.value = response.fortune
+                    _error.value = null
+                    onSuccess(response.fortune)
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "운세 조회 실패: ${error.message}")
+                    _error.value = error.message
+                    onFailure(error.message ?: "운세 조회에 실패했습니다.")
                 }
         }
     }
