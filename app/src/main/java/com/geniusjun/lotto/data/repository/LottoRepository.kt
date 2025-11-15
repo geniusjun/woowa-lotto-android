@@ -4,11 +4,12 @@ import android.util.Log
 import com.geniusjun.lotto.data.api.LottoApi
 import com.geniusjun.lotto.data.model.ApiResponse
 import com.geniusjun.lotto.data.model.BalanceResponse
+import com.geniusjun.lotto.data.model.FortuneResponse
 import com.geniusjun.lotto.data.model.LottoDrawResponse
 import com.geniusjun.lotto.data.model.WinningNumbersResponse
 
 /**
- * 로또 관련 API 호출을 담당하는 Repository
+ * API 호출을 담당하는 Repository
  */
 class LottoRepository(
     private val lottoApi: LottoApi
@@ -40,6 +41,16 @@ class LottoRepository(
         return handleApiCall(
             apiCall = { lottoApi.getBalance() },
             errorMessage = "잔액 조회 실패"
+        )
+    }
+    
+    /**
+     * 오늘의 운세 조회
+     */
+    suspend fun getTodayFortune(): Result<FortuneResponse> {
+        return handleApiCall(
+            apiCall = { lottoApi.getTodayFortune() },
+            errorMessage = "운세 조회 실패"
         )
     }
     
