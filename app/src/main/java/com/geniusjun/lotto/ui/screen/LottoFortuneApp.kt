@@ -10,9 +10,6 @@ import com.geniusjun.lotto.data.network.TokenProvider
 import com.geniusjun.lotto.data.repository.AuthRepository
 import com.geniusjun.lotto.data.repository.LottoRepository
 import com.geniusjun.lotto.model.LottoUiState
-import com.geniusjun.lotto.util.loadLastFortuneDate
-import com.geniusjun.lotto.util.saveLastFortuneDate
-import com.geniusjun.lotto.util.todayString
 
 @Composable
 fun LottoFortuneApp(
@@ -44,10 +41,6 @@ fun LottoFortuneApp(
     
     // 다이얼로그 상태
     var dialogState by remember { mutableStateOf(DialogState()) }
-    
-    // 운세 확인 날짜 관리
-    val today = remember { todayString() }
-    var lastFortuneDate by remember { mutableStateOf(loadLastFortuneDate(context)) }
 
     // 로그인 후 초기 데이터 로드
     LaunchedEffect(Unit) {
@@ -74,13 +67,14 @@ fun LottoFortuneApp(
     }
     
     val handleShowFortune = {
-        if (lastFortuneDate == today) {
-            dialogState = dialogState.showFortuneAlreadyDialog()
-        } else {
-            dialogState = dialogState.showFortuneDialog()
-            lastFortuneDate = today
-            saveLastFortuneDate(context, today)
-        }
+        lottoViewModel.loadFortune(
+            onSuccess = { fortune ->
+                dialogState = dialogState.showFortuneDialog(fortune)
+            },
+            onFailure = {
+                // 에러 표시
+            }
+        )
     }
     
     val handleCloseDialogs = {

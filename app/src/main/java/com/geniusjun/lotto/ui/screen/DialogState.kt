@@ -8,23 +8,25 @@ import com.geniusjun.lotto.data.model.LottoDrawResponse
 data class DialogState(
     val showLotto: Boolean = false,
     val showFortune: Boolean = false,
-    val showFortuneAlready: Boolean = false,
     val showNoMoney: Boolean = false,
-    val lottoDrawResult: LottoDrawResponse? = null
+    val lottoDrawResult: LottoDrawResponse? = null,
+    val fortuneText: String? = null
 ) {
     fun showLottoDialog(result: LottoDrawResponse) = copy(
         showLotto = true,
         lottoDrawResult = result
     )
     
-    fun showFortuneDialog() = copy(showFortune = true)
-    fun showFortuneAlreadyDialog() = copy(showFortuneAlready = true)
+    fun showFortuneDialog(fortune: String) = copy(
+        showFortune = true,
+        fortuneText = fortune
+    )
+    
     fun showNoMoneyDialog() = copy(showNoMoney = true)
     
     fun closeAll() = copy(
         showLotto = false,
         showFortune = false,
-        showFortuneAlready = false,
         showNoMoney = false
     )
 }
