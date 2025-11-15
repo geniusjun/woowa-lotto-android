@@ -46,7 +46,10 @@ fun LottoFortuneScreen(
             ) {
                 TitleSection()
                 BalanceCard(uiState.balance)
-                LottoNumbersCard(uiState.winningNumbers)
+                LottoNumbersCard(
+                    numbers = uiState.winningNumbers,
+                    bonusNumber = uiState.bonusNumber
+                )
                 TipBanner("매일 하루에 한 번 보너스 금액이 지급됩니다")
             }
 
@@ -110,14 +113,31 @@ fun BalanceCard(balance: Long) {
 }
 
 @Composable
-fun LottoNumbersCard(numbers: List<Int>) {
+fun LottoNumbersCard(
+    numbers: List<Int>,
+    bonusNumber: Int
+) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Text(text = "이번 주 로또 번호", color = Color.Gray, fontSize = 13.sp)
         Spacer(modifier = Modifier.height(12.dp))
 
         LottoNumberRows(numbers)
+        
+        // 보너스 번호
+        if (bonusNumber > 0) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "보너스", color = Color.Gray, fontSize = 12.sp)
+                LottoNumberBall(number = bonusNumber)
+            }
+        }
     }
 }
+
 @Composable
 private fun LottoNumberRows(numbers: List<Int>) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
