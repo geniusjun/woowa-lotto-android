@@ -96,7 +96,7 @@ fun TitleSection() {
 }
 
 @Composable
-fun BalanceCard(balance: Int) {
+fun BalanceCard(balance: Long) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Text(text = "현재 보유 금액", color = Color.Gray, fontSize = 13.sp)
         Spacer(modifier = Modifier.height(8.dp))
