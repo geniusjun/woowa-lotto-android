@@ -3,6 +3,7 @@ package com.geniusjun.lotto.ui.screen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.geniusjun.lotto.data.model.LottoDrawResponse
 import com.geniusjun.lotto.data.repository.LottoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,30 +23,71 @@ class LottoViewModel(
     private val _bonusNumber = MutableStateFlow<Int>(0)
     val bonusNumber: StateFlow<Int> = _bonusNumber.asStateFlow()
     
+    private val _balance = MutableStateFlow<Long>(0)
+    val balance: StateFlow<Long> = _balance.asStateFlow()
+    
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    private var hasLoaded = false
+    private var hasLoadedInitialData = false
     
     /**
-     * 당첨 번호 로드
-     * 로그인 완료 후에만 호출되도록 보장
+     * 로그인 후 초기 데이터 로드 (당첨 번호 + 잔액)
      */
-    fun loadWinningNumbers() {
-        if (hasLoaded) return
+    fun loadInitialData() {
+        if (hasLoadedInitialData) return
         
-        hasLoaded = true
+        hasLoadedInitialData = true
         viewModelScope.launch {
+            // 당첨 번호 로드
             lottoRepository.getLatestWinningNumbers()
-                .onSuccess { winningNumbers ->
-                    _winningNumbers.value = winningNumbers.mainNumbers
-                    _bonusNumber.value = winningNumbers.bonusNumber
-                    _error.value = null
+                .onSuccess { response ->
+                    _winningNumbers.value = response.mainNumbers
+                    _bonusNumber.value = response.bonusNumber
                 }
                 .onFailure { error ->
                     Log.e(TAG, "당첨 번호 로드 실패: ${error.message}")
                     _error.value = error.message
-                    hasLoaded = false // 실패 시 재시도 가능하도록
+                    hasLoadedInitialData = false
+                    return@launch
+                }
+            
+            // 잔액 로드
+            lottoRepository.getBalance()
+                .onSuccess { response ->
+                    _balance.value = response.balance
+                    _error.value = null
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "잔액 로드 실패: ${error.message}")
+                    _error.value = error.message
+                    hasLoadedInitialData = false
+                }
+        }
+    }
+    
+    /**
+     * 랜덤 로또 구매
+     */
+    fun drawLotto(
+        onSuccess: (LottoDrawResponse) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            lottoRepository.drawLotto()
+                .onSuccess { drawResponse ->
+                    // 당첨 번호 업데이트 (API 응답에서 제공)
+                    _winningNumbers.value = drawResponse.winningNumbers
+                    _bonusNumber.value = drawResponse.bonusNumber
+                    // 잔액 업데이트 (API 응답에서 제공)
+                    _balance.value = drawResponse.balance
+                    _error.value = null
+                    onSuccess(drawResponse)
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "로또 구매 실패: ${error.message}")
+                    _error.value = error.message
+                    onFailure(error.message ?: "로또 구매에 실패했습니다.")
                 }
         }
     }
