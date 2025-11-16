@@ -11,8 +11,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import com.geniusjun.lotto.model.LottoUiState
 import com.geniusjun.lotto.ui.components.AppCard
@@ -25,13 +23,20 @@ import com.geniusjun.lotto.ui.theme.MintPrimary
 fun LottoFortuneScreen(
     uiState: LottoUiState,
     onClickBuy: () -> Unit,
-    onClickFortune: () -> Unit
+    onClickFortune: () -> Unit,
+    onLogout: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MintBackground
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            LogoutButton(
+                onLogout = onLogout,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            )
 
             Column(
                 modifier = Modifier
@@ -41,7 +46,10 @@ fun LottoFortuneScreen(
             ) {
                 TitleSection()
                 BalanceCard(uiState.balance)
-                LottoNumbersCard(uiState.thisWeekNumbers)
+                LottoNumbersCard(
+                    numbers = uiState.winningNumbers,
+                    bonusNumber = uiState.bonusNumber
+                )
                 TipBanner("매일 하루에 한 번 보너스 금액이 지급됩니다")
             }
 
@@ -53,6 +61,23 @@ fun LottoFortuneScreen(
                     .padding(bottom = 20.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun LogoutButton(
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TextButton(
+        onClick = onLogout,
+        modifier = modifier
+    ) {
+        Text(
+            text = "로그아웃",
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
     }
 }
 
@@ -74,7 +99,7 @@ fun TitleSection() {
 }
 
 @Composable
-fun BalanceCard(balance: Int) {
+fun BalanceCard(balance: Long) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Text(text = "현재 보유 금액", color = Color.Gray, fontSize = 13.sp)
         Spacer(modifier = Modifier.height(8.dp))
@@ -88,14 +113,31 @@ fun BalanceCard(balance: Int) {
 }
 
 @Composable
-fun LottoNumbersCard(numbers: List<Int>) {
+fun LottoNumbersCard(
+    numbers: List<Int>,
+    bonusNumber: Int
+) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Text(text = "이번 주 로또 번호", color = Color.Gray, fontSize = 13.sp)
         Spacer(modifier = Modifier.height(12.dp))
 
         LottoNumberRows(numbers)
+        
+        // 보너스 번호
+        if (bonusNumber > 0) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "보너스", color = Color.Gray, fontSize = 12.sp)
+                LottoNumberBall(number = bonusNumber)
+            }
+        }
     }
 }
+
 @Composable
 private fun LottoNumberRows(numbers: List<Int>) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

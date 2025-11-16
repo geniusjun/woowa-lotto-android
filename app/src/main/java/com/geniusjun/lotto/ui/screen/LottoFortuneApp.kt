@@ -2,84 +2,96 @@ package com.geniusjun.lotto.ui.screen
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import com.geniusjun.lotto.model.LottoPick
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.geniusjun.lotto.auth.GoogleSignInManager
+import com.geniusjun.lotto.data.api.LottoApi
+import com.geniusjun.lotto.data.network.RetrofitClient
+import com.geniusjun.lotto.data.network.TokenProvider
+import com.geniusjun.lotto.data.repository.AuthRepository
+import com.geniusjun.lotto.data.repository.LottoRepository
 import com.geniusjun.lotto.model.LottoUiState
-import com.geniusjun.lotto.util.generateLottoNumbers
-import com.geniusjun.lotto.util.loadLastFortuneDate
-import com.geniusjun.lotto.util.saveLastFortuneDate
-import com.geniusjun.lotto.util.todayString
-import java.time.LocalDate
 
 @Composable
-fun LottoFortuneApp() {
+fun LottoFortuneApp(
+    onLogout: () -> Unit
+) {
     val context = LocalContext.current
+    val tokenProvider = remember { TokenProvider(context) }
+    val signInManager = remember { GoogleSignInManager(context, tokenProvider) }
+    
+    // Repository 및 ViewModel 초기화
+    val lottoRepository = remember {
+        val authApi = RetrofitClient.createAuthApi(tokenProvider)
+        val authRepository = AuthRepository(authApi, tokenProvider)
+        val lottoApi = RetrofitClient.createApi<LottoApi>(tokenProvider, authRepository)
+        LottoRepository(lottoApi)
+    }
+    
+    val lottoViewModel: LottoViewModel = viewModel {
+        LottoViewModel(lottoRepository)
+    }
+    val logoutViewModel: LogoutViewModel = viewModel {
+        LogoutViewModel(signInManager)
+    }
+    
+    // 상태 수집
+    val winningNumbers by lottoViewModel.winningNumbers.collectAsState()
+    val bonusNumber by lottoViewModel.bonusNumber.collectAsState()
+    val balance by lottoViewModel.balance.collectAsState()
+    
+    // 다이얼로그 상태
+    var dialogState by remember { mutableStateOf(DialogState()) }
 
-    // 다이얼로그 열림 상태
-    var showLottoDialog by remember { mutableStateOf(false) }
-    var showFortuneDialog by remember { mutableStateOf(false) }
-    var showNoMoneyDialog by remember { mutableStateOf(false) }
-    var showFortuneAlreadyDialog by remember { mutableStateOf(false) }
+    // 로그인 후 초기 데이터 로드
+    LaunchedEffect(Unit) {
+        if (tokenProvider.getAccessToken() != null) {
+            lottoViewModel.loadInitialData()
+        }
+    }
 
-    // 내가 방금 산 로또
-    var myLatestPick by remember { mutableStateOf<LottoPick?>(null) }
-
-    // 초기 데이터 (변하지 않는 쪽)
-    val uiState = remember {
+    // UI 상태
+    val uiState = remember(winningNumbers, bonusNumber, balance) {
         LottoUiState(
-            balance = 50_000,
-            thisWeekNumbers = listOf(7, 12, 23, 31, 38, 42)
+            balance = balance,
+            winningNumbers = winningNumbers,
+            bonusNumber = bonusNumber
         )
     }
 
-    // 실제로 변하는 잔액
-    var currentBalance by remember { mutableIntStateOf(uiState.balance) }
+    // 이벤트 핸들러
+    val handleBuyLotto = {
+        lottoViewModel.drawLotto(
+            onSuccess = { result -> dialogState = dialogState.showLottoDialog(result) },
+            onFailure = { dialogState = dialogState.showNoMoneyDialog() }
+        )
+    }
+    
+    val handleShowFortune = {
+        lottoViewModel.loadFortune(
+            onSuccess = { fortune ->
+                dialogState = dialogState.showFortuneDialog(fortune)
+            },
+            onFailure = {
+                // 에러 표시
+            }
+        )
+    }
+    
+    val handleCloseDialogs = {
+        dialogState = dialogState.closeAll()
+    }
 
-    // 오늘 날짜 문자열 (예: "2025-11-10")
-    val today = remember { todayString() }
-
-    // 로컬 저장된 마지막 운세 본 날짜 불러오기
-    var lastFortuneDate by remember { mutableStateOf(loadLastFortuneDate(context)) }
-
-    // 한 장 가격
-    val ticketPrice = 1_000
-
+    // 화면 구성
     LottoFortuneScreen(
-        uiState = uiState.copy(balance = currentBalance),
-        onClickBuy = {
-            if (currentBalance >= ticketPrice) {
-                val pick = generateLottoNumbers()
-                myLatestPick = pick
-                currentBalance -= ticketPrice
-                showLottoDialog = true
-            } else {
-                showNoMoneyDialog = true
-            }
-        },
-        onClickFortune = {
-            // 1일 1회 제한 로직
-            if (lastFortuneDate == today) {
-                // 이미 오늘 봤다
-                showFortuneAlreadyDialog = true
-            } else {
-                // 오늘 처음 본다 → 운세 보기 + 날짜 저장
-                showFortuneDialog = true
-                lastFortuneDate = today
-                saveLastFortuneDate(context, today)
-            }
-        }
+        uiState = uiState,
+        onClickBuy = handleBuyLotto,
+        onClickFortune = handleShowFortune,
+        onLogout = { logoutViewModel.logout(onScreenTransition = onLogout) }
     )
 
-    // 다이얼로그 모음
+    // 다이얼로그
     LottoDialogs(
-        showLotto = showLottoDialog,
-        showFortune = showFortuneDialog,
-        showFortuneAlready = showFortuneAlreadyDialog,
-        showNoMoney = showNoMoneyDialog,
-        thisWeekNumbers = uiState.thisWeekNumbers,
-        myPick = myLatestPick,
-        onCloseLotto = { showLottoDialog = false },
-        onCloseFortune = { showFortuneDialog = false },
-        onCloseFortuneAlready = { showFortuneAlreadyDialog = false },
-        onCloseNoMoney = { showNoMoneyDialog = false }
+        dialogState = dialogState,
+        onCloseAll = handleCloseDialogs
     )
 }
