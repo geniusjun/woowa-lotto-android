@@ -6,6 +6,7 @@ import com.geniusjun.lotto.data.model.ApiResponse
 import com.geniusjun.lotto.data.model.BalanceResponse
 import com.geniusjun.lotto.data.model.FortuneResponse
 import com.geniusjun.lotto.data.model.LottoDrawResponse
+import com.geniusjun.lotto.data.model.MemberRankResult
 import com.geniusjun.lotto.data.model.WinningNumbersResponse
 
 /**
@@ -51,6 +52,26 @@ class LottoRepository(
         return handleApiCall(
             apiCall = { lottoApi.getTodayFortune() },
             errorMessage = "운세 조회 실패"
+        )
+    }
+    
+    /**
+     * TOP3 랭킹 조회
+     */
+    suspend fun getTop3Ranks(): Result<List<MemberRankResult>> {
+        return handleApiCall(
+            apiCall = { lottoApi.getTop3Ranks() },
+            errorMessage = "랭킹 조회 실패"
+        )
+    }
+    
+    /**
+     * 내 랭킹 조회
+     */
+    suspend fun getMyRank(): Result<MemberRankResult> {
+        return handleApiCall(
+            apiCall = { lottoApi.getMyRank() },
+            errorMessage = "내 랭킹 조회 실패"
         )
     }
     

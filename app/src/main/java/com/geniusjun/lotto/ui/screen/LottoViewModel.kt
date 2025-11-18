@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.geniusjun.lotto.data.model.LottoDrawResponse
+import com.geniusjun.lotto.data.model.MemberRankResult
 import com.geniusjun.lotto.data.repository.LottoRepository
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -112,6 +114,36 @@ class LottoViewModel(
                     _error.value = error.message
                     onFailure(error.message ?: "운세 조회에 실패했습니다.")
                 }
+        }
+    }
+    
+    /**
+     * 랭킹 정보 조회 (TOP3 + 내 랭킹)
+     */
+    fun loadRanking(
+        onSuccess: (List<MemberRankResult>, MemberRankResult?) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val top3Deferred = async { lottoRepository.getTop3Ranks() }
+            val myRankDeferred = async { lottoRepository.getMyRank() }
+            
+            val top3Result = top3Deferred.await()
+            val myRankResult = myRankDeferred.await()
+            
+            if (top3Result.isSuccess && myRankResult.isSuccess) {
+                val top3 = top3Result.getOrNull() ?: emptyList()
+                val myRank = myRankResult.getOrNull()
+                _error.value = null
+                onSuccess(top3, myRank)
+            } else {
+                val errorMessage = top3Result.exceptionOrNull()?.message 
+                    ?: myRankResult.exceptionOrNull()?.message 
+                    ?: "랭킹 조회에 실패했습니다."
+                Log.e(TAG, "랭킹 조회 실패: $errorMessage")
+                _error.value = errorMessage
+                onFailure(errorMessage)
+            }
         }
     }
     
