@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.geniusjun.lotto.data.model.LottoDrawResponse
+import com.geniusjun.lotto.data.model.MemberRankResult
 import com.geniusjun.lotto.ui.theme.LottoColors
 import com.geniusjun.lotto.ui.theme.MintPrimary
 
@@ -41,6 +42,14 @@ fun LottoDialogs(
 
     if (dialogState.showNoMoney) {
         NoMoneyDialog(onDismiss = onCloseAll)
+    }
+
+    if (dialogState.showRanking) {
+        RankingDialog(
+            top3 = dialogState.top3Ranks,
+            myRank = dialogState.myRank,
+            onDismiss = onCloseAll
+        )
     }
 }
 
@@ -352,4 +361,144 @@ private fun NoMoneyDialog(onDismiss: () -> Unit) {
         text = { Text("로또를 구매하려면 최소 1,000원이 필요합니다.") },
         shape = RoundedCornerShape(20.dp)
     )
+}
+
+@Composable
+fun RankingDialog(
+    top3: List<MemberRankResult>,
+    myRank: MemberRankResult?,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        title = { RankingTitle() },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Top3Section(top3)
+                
+                if (myRank != null) {
+                    HorizontalDivider(color = Color.LightGray, thickness = 1.dp)
+                    MyRankSection(myRank)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("닫기") }
+        },
+        shape = RoundedCornerShape(24.dp),
+        containerColor = Color.White
+    )
+}
+
+@Composable
+private fun RankingTitle() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("🏆 랭킹", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    }
+}
+
+@Composable
+private fun Top3Section(top3: List<MemberRankResult>) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "TOP 3",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Gray
+        )
+        
+        if (top3.isEmpty()) {
+            Text(
+                text = "랭킹 데이터가 없습니다.",
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
+        } else {
+            top3.forEachIndexed { index, rank ->
+                RankItem(
+                    rank = rank,
+                    position = index + 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RankItem(
+    rank: MemberRankResult,
+    position: Int
+) {
+    val (backgroundColor, textColor) = when (position) {
+        1 -> Color(0xFFFFD700) to Color(0xFF6B4D15) // 금색
+        2 -> Color(0xFFC0C0C0) to Color(0xFF4A4A4A) // 은색
+        3 -> Color(0xFFCD7F32) to Color.White       // 동색
+        else -> Color(0xFFE0E0E0) to Color.Black
+    }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "${position}등",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor
+                )
+                Text(
+                    text = rank.nickname,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = textColor
+                )
+            }
+            Text(
+                text = "₩ ${String.format("%,d", rank.balance)}",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = textColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun MyRankSection(myRank: MemberRankResult) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "나의 등수는 ${myRank.rank}등",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = MintPrimary
+        )
+        Text(
+            text = "보유 금액: ₩ ${String.format("%,d", myRank.balance)}",
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
+    }
 }
