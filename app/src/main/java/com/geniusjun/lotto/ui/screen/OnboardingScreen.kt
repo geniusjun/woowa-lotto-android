@@ -195,7 +195,7 @@ private fun FeaturesList() {
     ) {
         FeatureItem(
             icon = "🎁",
-            text = "매일 10,000원 보너스 지급"
+            text = "매일 100,000원 보너스 지급"
         )
         FeatureItem(
             icon = "🎟",
