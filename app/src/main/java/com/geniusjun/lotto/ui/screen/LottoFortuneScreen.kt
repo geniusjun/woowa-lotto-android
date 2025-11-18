@@ -24,6 +24,7 @@ fun LottoFortuneScreen(
     uiState: LottoUiState,
     onClickBuy: () -> Unit,
     onClickFortune: () -> Unit,
+    onClickRanking: () -> Unit,
     onLogout: () -> Unit
 ) {
     Surface(
@@ -50,6 +51,7 @@ fun LottoFortuneScreen(
                     numbers = uiState.winningNumbers,
                     bonusNumber = uiState.bonusNumber
                 )
+                RankingButton(onClick = onClickRanking)
                 TipBanner("매일 하루에 한 번 보너스 금액이 지급됩니다")
             }
 
@@ -171,6 +173,25 @@ private fun LottoNumberBall(number: Int) {
         contentAlignment = Alignment.Center
     ) {
         Text(text = number.toString(), color = Color.White, fontSize = 16.sp)
+    }
+}
+
+@Composable
+fun RankingButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFFFFD700),
+            contentColor = Color(0xFF6B4D15)
+        ),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "🏆 랭킹 보기",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 

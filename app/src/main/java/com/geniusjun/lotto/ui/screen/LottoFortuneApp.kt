@@ -77,6 +77,17 @@ fun LottoFortuneApp(
         )
     }
     
+    val handleShowRanking = {
+        lottoViewModel.loadRanking(
+            onSuccess = { top3, myRank ->
+                dialogState = dialogState.showRankingDialog(top3, myRank)
+            },
+            onFailure = {
+                // 에러 표시
+            }
+        )
+    }
+    
     val handleCloseDialogs = {
         dialogState = dialogState.closeAll()
     }
@@ -86,6 +97,7 @@ fun LottoFortuneApp(
         uiState = uiState,
         onClickBuy = handleBuyLotto,
         onClickFortune = handleShowFortune,
+        onClickRanking = handleShowRanking,
         onLogout = { logoutViewModel.logout(onScreenTransition = onLogout) }
     )
 

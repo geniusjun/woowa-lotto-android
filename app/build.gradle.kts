@@ -38,15 +38,25 @@ android {
         
         buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$googleClientId\"")
 
+        val baseUrl = getLocalProperty("BASE_URL")
+        if (baseUrl.isEmpty()) {
+            throw GradleException("BASE_URL is missing in local.properties")
+        }
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = false
+        debug {
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        release {
+            isMinifyEnabled = false
         }
     }
     compileOptions {
