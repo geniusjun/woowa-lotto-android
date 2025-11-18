@@ -4,6 +4,7 @@ import com.geniusjun.lotto.data.model.ApiResponse
 import com.geniusjun.lotto.data.model.BalanceResponse
 import com.geniusjun.lotto.data.model.FortuneResponse
 import com.geniusjun.lotto.data.model.LottoDrawResponse
+import com.geniusjun.lotto.data.model.MemberRankResult
 import com.geniusjun.lotto.data.model.WinningNumbersResponse
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -32,5 +33,17 @@ interface LottoApi {
      */
     @GET("api/fortune/today")
     suspend fun getTodayFortune(): ApiResponse<FortuneResponse>
+    
+    /**
+     * TOP3 랭킹 조회
+     */
+    @GET("api/rank/top3")
+    suspend fun getTop3Ranks(): ApiResponse<List<MemberRankResult>>
+    
+    /**
+     * 내 랭킹 조회
+     */
+    @GET("api/rank/me")
+    suspend fun getMyRank(): ApiResponse<MemberRankResult>
 }
 
